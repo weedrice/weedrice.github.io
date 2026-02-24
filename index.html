@@ -1,1 +1,849 @@
-Hello World
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>weedrice — Backend Developer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #111118;
+      --bg3: #16161f;
+      --line: #1e1e2e;
+      --accent: #7c6af7;
+      --accent2: #a78bfa;
+      --accent3: #34d399;
+      --text: #e2e0f0;
+      --text-muted: #6b6880;
+      --text-dim: #9d9ab0;
+      --tag-bg: #1a1828;
+      --tag-border: #2d2a45;
+    }
+
+    [data-theme="light"] {
+      --bg: #f8f7fc;
+      --bg2: #ffffff;
+      --bg3: #f0eef8;
+      --line: #e4e2ec;
+      --accent: #6d5bd4;
+      --accent2: #7c6af7;
+      --accent3: #0d9668;
+      --text: #1a1828;
+      --text-muted: #5c5970;
+      --text-dim: #6b6880;
+      --tag-bg: #f0eef8;
+      --tag-border: #d4d0e0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.4;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(124,106,247,0.12) 0%, transparent 70%);
+      top: -200px; left: -200px;
+      animation: drift1 20s ease-in-out infinite;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(52,211,153,0.08) 0%, transparent 70%);
+      bottom: 100px; right: -100px;
+      animation: drift2 25s ease-in-out infinite;
+    }
+    @keyframes drift1 {
+      0%, 100% { transform: translate(0,0); }
+      50% { transform: translate(80px, 60px); }
+    }
+    @keyframes drift2 {
+      0%, 100% { transform: translate(0,0); }
+      50% { transform: translate(-60px, -40px); }
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: rgba(10,10,15,0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+      transition: background 0.25s, border-color 0.25s;
+    }
+    [data-theme="light"] nav {
+      background: rgba(248,247,252,0.9);
+    }
+    .nav-logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: var(--accent2);
+      letter-spacing: 0.05em;
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent2); }
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--bg2);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .theme-toggle:hover {
+      border-color: var(--accent2);
+      background: rgba(124,106,247,0.12);
+    }
+    .theme-toggle svg { width: 20px; height: 20px; }
+    .theme-toggle .icon-sun { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+    [data-theme="light"] .theme-toggle .icon-sun { display: block; }
+    [data-theme="light"] .theme-toggle .icon-moon { display: none; }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 80px;
+    }
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--accent3);
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+    .hero-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(52px, 8vw, 96px);
+      line-height: 1.0;
+      color: var(--text);
+      margin-bottom: 12px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s forwards;
+    }
+    .hero-name em { font-style: italic; color: var(--accent2); }
+    .hero-title {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(14px, 2vw, 18px);
+      color: var(--text-muted);
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.6s forwards;
+    }
+    .hero-desc {
+      max-width: 560px;
+      font-size: 15px;
+      color: var(--text-dim);
+      line-height: 1.8;
+      margin-bottom: 56px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.8s forwards;
+    }
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.0s forwards;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: var(--accent2);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(124,106,247,0.3);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--line);
+    }
+    .btn-ghost:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+      transform: translateY(-2px);
+    }
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+      padding-top: 80px;
+      border-top: 1px solid var(--line);
+      margin-top: 80px;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.2s forwards;
+    }
+    .stat-num {
+      font-family: 'DM Serif Display', serif;
+      font-size: 36px;
+      color: var(--accent2);
+    }
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    section { padding: 120px 0; }
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--accent3);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.1;
+      margin-bottom: 64px;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .skill-card {
+      background: var(--bg2);
+      padding: 32px 28px;
+      transition: background 0.2s;
+    }
+    .skill-card:hover { background: var(--bg3); }
+    .skill-icon { font-size: 24px; margin-bottom: 14px; }
+    .skill-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .skill-items {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    .projects-featured {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .project-card {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 32px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .project-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(124,106,247,0.05) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .project-card:hover {
+      border-color: rgba(124,106,247,0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+    }
+    .project-card:hover::before { opacity: 1; }
+    .project-card.featured {
+      background: linear-gradient(135deg, #13121e 0%, var(--bg2) 100%);
+    }
+    [data-theme="light"] .project-card.featured {
+      background: linear-gradient(135deg, var(--bg3) 0%, var(--bg2) 100%);
+    }
+    .project-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--accent3);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .project-status::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent3);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .project-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      padding: 2px 8px;
+      border: 1px solid var(--tag-border);
+      border-radius: 4px;
+    }
+    .project-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .project-name-sm {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .project-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+    .project-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      padding: 4px 10px;
+      background: var(--tag-bg);
+      border: 1px solid var(--tag-border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+    .tag.highlight {
+      border-color: rgba(124,106,247,0.4);
+      color: var(--accent2);
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 8px; bottom: 8px;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 56px;
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-dot {
+      position: absolute;
+      left: -36px; top: 6px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(124,106,247,0.5);
+    }
+    .timeline-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+    .timeline-role {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .timeline-role-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .timeline-company {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--accent2);
+      margin-bottom: 12px;
+    }
+    .timeline-item--work .timeline-company {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
+    .timeline-item--work .timeline-role-sub {
+      margin-bottom: 12px;
+    }
+    .timeline-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 600px;
+      line-height: 1.8;
+    }
+    .timeline-desc a {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+    .timeline-desc a:hover {
+      text-decoration: underline;
+    }
+    .timeline-list {
+      list-style: none;
+      margin-top: 12px;
+    }
+    .timeline-list li {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .timeline-list li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--accent2);
+    }
+
+    .contact-box {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 64px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .contact-box::before {
+      content: '';
+      position: absolute;
+      top: -100px; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(124,106,247,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .contact-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 40px;
+      margin-bottom: 16px;
+    }
+    .contact-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+    .contact-links {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    footer {
+      padding: 40px;
+      text-align: center;
+      border-top: 1px solid var(--line);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      .nav-right { gap: 20px; }
+      .nav-links { gap: 24px; }
+      main { padding: 0 24px; }
+      .projects-featured { grid-template-columns: 1fr; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .hero-stats { flex-wrap: wrap; gap: 32px; }
+      .contact-box { padding: 40px 24px; }
+      .skills-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<nav>
+  <span class="nav-logo">weedrice.github.io</span>
+  <div class="nav-right">
+    <ul class="nav-links">
+      <li><a href="#projects">projects</a></li>
+      <li><a href="#experience">experience</a></li>
+      <li><a href="#skills">skills</a></li>
+    </ul>
+    <button type="button" class="theme-toggle" aria-label="테마 전환 (다크/라이트)">
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </div>
+</nav>
+
+<main>
+  <section class="hero">
+    <p class="hero-eyebrow">Backend Developer · 7년차</p>
+    <h1 class="hero-name">Backend<br><em>Developer.</em></h1>
+    <p class="hero-title">Java · Spring Boot · Oracle · Cloud</p>
+    <p class="hero-desc">
+      엔터프라이즈 시스템 개발 7년차 백엔드 개발자입니다.<br>
+      Spring 생태계를 중심으로 대규모 커뮤니티 플랫폼, 웹툰 MSA, AI 연동 서비스 등 다양한 프로젝트를 진행했습니다.
+      안정성과 확장성을 고려한 시스템 설계에 관심이 많습니다.
+    </p>
+    <div class="hero-cta">
+      <a href="#projects" class="btn btn-primary">프로젝트 보기</a>
+      <a href="https://github.com/weedrice" target="_blank" rel="noopener" class="btn btn-ghost">GitHub →</a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">6+</div>
+        <div class="stat-label">Years Experience</div>
+      </div>
+      <div>
+        <div class="stat-num">30+</div>
+        <div class="stat-label">Repositories</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="reveal">
+      <p class="section-label">Side Projects</p>
+      <h2 class="section-title">사이드 프로젝트.</h2>
+    </div>
+
+    <div class="projects-featured reveal">
+      <a class="project-card featured" href="https://github.com/weedrice/project_whiteboard" target="_blank" rel="noopener">
+        <span class="project-status">Active</span>
+        <h3 class="project-name">Project Whiteboard</h3>
+        <p class="project-desc">Reddit 스타일 오픈소스 커뮤니티 플랫폼.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Java</span>
+          <span class="tag highlight">Spring Boot</span>
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">Vue.js</span>
+          <span class="tag">AWS</span>
+        </div>
+      </a>
+      <a class="project-card featured" href="https://github.com/weedrice/msa-webtoon" target="_blank" rel="noopener">
+        <h3 class="project-name">MSA Webtoon Platform</h3>
+        <p class="project-desc">마이크로서비스 아키텍처 기반 웹툰 서비스. 서비스별 독립 배포 및 확장성 설계.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Java</span>
+          <span class="tag highlight">MSA</span>
+          <span class="tag">Spring Cloud</span>
+          <span class="tag">Docker</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="projects-grid reveal">
+      <a class="project-card" href="https://github.com/weedrice/novel_ai" target="_blank" rel="noopener">
+        <h3 class="project-name-sm">Novel AI</h3>
+        <p class="project-desc">AI 연동 소설 창작 지원 서비스.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Java</span>
+          <span class="tag">AI Integration</span>
+        </div>
+      </a>
+      <a class="project-card" href="https://github.com/weedrice/relations" target="_blank" rel="noopener">
+        <h3 class="project-name-sm">Relations</h3>
+        <p class="project-desc">TypeScript 기반 관계형 데이터 모델링 프로젝트.</p>
+        <div class="project-tags">
+          <span class="tag highlight">TypeScript</span>
+        </div>
+      </a>
+      <a class="project-card" href="https://github.com/weedrice/gradu" target="_blank" rel="noopener">
+        <h3 class="project-name-sm">Gradu</h3>
+        <p class="project-desc">한동대학교 학생 대상 학점 관리 Android 앱. 졸업 프로젝트.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Java</span>
+          <span class="tag">Android</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="reveal" style="margin-top: 80px;">
+      <p class="section-label">Education / Study</p>
+      <h2 class="section-title">교육 / 스터디 프로젝트.</h2>
+    </div>
+    <div class="projects-grid reveal">
+      <a class="project-card project-edu" href="https://github.com/weedrice/caremoa_claim" target="_blank" rel="noopener">
+        <span class="project-badge">교육 수강</span>
+        <h3 class="project-name-sm">CareMoa</h3>
+        <p class="project-desc">Backend MSA 교육에서 진행한 프로젝트. Feign, Kafka, K8s 및 Docker 기반 CI/CD 적용. 케어모아 클레임 · 사후관리 도메인 실습.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Java</span>
+          <span class="tag">Spring Boot</span>
+          <span class="tag">Feign</span>
+          <span class="tag">Kafka</span>
+          <span class="tag">K8s</span>
+          <span class="tag">Docker</span>
+        </div>
+      </a>
+      <a class="project-card project-edu" href="https://github.com/weedrice/fastcampus-sns-project" target="_blank" rel="noopener">
+        <span class="project-badge">교육 수강</span>
+        <h3 class="project-name-sm">SNS Service</h3>
+        <p class="project-desc">패스트캠퍼스 강의 수강 중 진행한 대규모 트래픽 SNS 서비스 실습.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Java</span>
+          <span class="tag">Spring Boot</span>
+        </div>
+      </a>
+      <a class="project-card project-edu" href="https://github.com/weedrice/boostcamp3_C" target="_blank" rel="noopener">
+        <span class="project-badge">교육 수강</span>
+        <h3 class="project-name-sm">서울살이</h3>
+        <p class="project-desc">Naver BoostCamp Android 과정 수료 프로젝트. 주택 정보 제공 Android Native App. MVVM, Koin, RxJava, Room.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Kotlin</span>
+          <span class="tag">Android</span>
+          <span class="tag">MVVM</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="reveal">
+      <p class="section-label">Experience</p>
+      <h2 class="section-title">경력.</h2>
+    </div>
+    <div class="timeline reveal">
+      <div class="timeline-item timeline-item--work">
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">2020 – 현재</div>
+        <div class="timeline-company">SK Inc. AX (C&C)</div>
+        <div class="timeline-role">Manager</div>
+        <div class="timeline-role-sub">Backend Developer</div>
+        <div class="timeline-desc">T-Commerce BackOffice 개발/운영.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">2019</div>
+        <div class="timeline-role">Naver BoostCamp</div>
+        <div class="timeline-company">Android 과정 수료</div>
+        <div class="timeline-desc">서울살이 Android Native App 개발 (<a href="https://github.com/weedrice/boostcamp3_C" target="_blank" rel="noopener">boostcamp3_C</a>).</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">2017</div>
+        <div class="timeline-role">Handong Global University</div>
+        <div class="timeline-company">콘텐츠 융합 디자인 학부 (시각디자인|컴퓨터공학 복수전공)</div>
+        <div class="timeline-desc">학점 관리 Android 앱 Gradu 개발 (졸업 프로젝트).</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="reveal">
+      <p class="section-label">Skills</p>
+      <h2 class="section-title">기술 스택.</h2>
+    </div>
+    <div class="skills-grid reveal">
+      <div class="skill-card">
+        <div class="skill-icon">☕</div>
+        <div class="skill-name">Backend</div>
+        <div class="skill-items">Java · Spring Boot<br>Spring MVC · JPA<br>Kotlin</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🗄️</div>
+        <div class="skill-name">Database</div>
+        <div class="skill-items">Oracle · PostgreSQL<br>MySQL · Redis<br>Query Optimization</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">☁️</div>
+        <div class="skill-name">DevOps / Cloud</div>
+        <div class="skill-items">AWS (EC2, S3)<br>Docker · Jenkins<br>CI/CD Pipeline</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🏗️</div>
+        <div class="skill-name">Architecture</div>
+        <div class="skill-items">MSA · REST API<br>System Design<br>Spring Cloud</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🎨</div>
+        <div class="skill-name">Frontend</div>
+        <div class="skill-items">Vue.js · TypeScript<br>JavaScript<br>HTML/CSS</div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-icon">🤖</div>
+        <div class="skill-name">AI / ML</div>
+        <div class="skill-items">Python · OpenCV<br>Deep Learning<br>AI API Integration</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>© 2025 weedrice · Built with vanilla HTML/CSS/JS · Hosted on GitHub Pages</p>
+</footer>
+
+<script>
+  (function () {
+    var stored = localStorage.getItem('theme');
+    var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+    if (stored === 'light' || (!stored && prefersLight)) {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+    document.querySelector('.theme-toggle').addEventListener('click', function () {
+      var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      document.documentElement.setAttribute('data-theme', isLight ? '' : 'light');
+      localStorage.setItem('theme', isLight ? 'dark' : 'light');
+    });
+  })();
+
+  var reveals = document.querySelectorAll('.reveal');
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        setTimeout(function () {
+          entry.target.classList.add('visible');
+        }, 100);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(function (el) { return observer.observe(el); });
+
+  var sections = document.querySelectorAll('section[id]');
+  var navLinks = document.querySelectorAll('.nav-links a');
+  function updateNavHighlight() {
+    var current = '';
+    sections.forEach(function (section) {
+      if (window.scrollY >= section.offsetTop - 100) {
+        current = section.getAttribute('id');
+      }
+    });
+    navLinks.forEach(function (link) {
+      link.style.color = link.getAttribute('href') === '#' + current ? 'var(--accent2)' : '';
+    });
+  }
+  window.addEventListener('scroll', updateNavHighlight);
+  updateNavHighlight();
+</script>
+</body>
+</html>
